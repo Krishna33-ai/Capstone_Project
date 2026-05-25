@@ -1,0 +1,14 @@
+{
+  "name": "capstone-project-playwright",
+  "version": "1.0.0",
+  "description": "Enterprise QE Capstone — ParaBank | Playwright",
+  "scripts": {
+    "test:account": "npx playwright test --config=project1-pom/playwright.config.js tests/account.spec.js",
+    "test:all": "npx playwright test --config=project1-pom/playwright.config.js",
+    "report": "npx playwright show-report project1-pom/reports/html"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "dotenv": "^16.4.5"
+  }
+}

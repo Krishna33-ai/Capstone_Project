@@ -1,0 +1,18 @@
+{
+  "name": "capstone-project-playwright",
+  "version": "1.0.0",
+  "description": "Enterprise QE Capstone - Playwright + GenAI | NGA ID: 2422321",
+  "scripts": {
+    "test:project1": "npx playwright test --config=project1-pom/playwright.config.js",
+    "test:auth": "npx playwright test --config=project1-pom/playwright.config.js tests/auth.spec.js",
+    "test:smoke": "npx playwright test --config=project1-pom/playwright.config.js tests/smoke.spec.js",
+    "test:project2": "npx playwright test --config=project2-svg/playwright.config.js",
+    "report": "npx playwright show-report project1-pom/reports/html",
+    "report:p2": "npx playwright show-report project2-svg/reports/html",
+    "test:account": "npx playwright test --config=project1-pom/playwright.config.js tests/account.spec.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "dotenv": "^16.4.5"
+  }
+}

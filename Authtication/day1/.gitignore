@@ -1,0 +1,6 @@
+node_modules/
+.env
+project1-pom/reports/
+project2-svg/reports/
+test-results/
+playwright-report/
