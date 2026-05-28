@@ -25,10 +25,20 @@ test.describe('Block 1 — Account Activity Page Load', () => {
     await loginAndGotoActivity(page);
     await expect(page).toHaveURL(/activity/);
   });
+
+  // FIX: TC-TXN-02 was the one flaky UI failure.
+  // Root cause: after clickFirstAccount() + domcontentloaded, ParaBank renders
+  // #rightPanel asynchronously. The raw toBeVisible() check races against the
+  // async render and loses intermittently.
+  // Fix: wrap in toPass() retry loop (same pattern used by TC-TXN-03 and
+  // every other test in this file that checks panel content).
   test('TC-TXN-02 | Right panel content is visible on activity page', async ({ page }) => {
     const txn = await loginAndGotoActivity(page);
-    await expect(txn.rightPanel).toBeVisible();
+    await expect(async () => {
+      await expect(txn.rightPanel).toBeVisible();
+    }).toPass({ timeout: 20000 });
   });
+
   test('TC-TXN-03 | Page title contains account related text', async ({ page }) => {
     const txn = await loginAndGotoActivity(page);
     await expect(async () => {
@@ -36,6 +46,7 @@ test.describe('Block 1 — Account Activity Page Load', () => {
       expect(text.length).toBeGreaterThan(0);
     }).toPass({ timeout: 15000 });
   });
+
   test('TC-TXN-04 | Account overview link is visible on activity page', async ({ page }) => {
     const txn = await loginAndGotoActivity(page);
     await txn.overviewLink.waitFor({ state: 'visible', timeout: 20000 });
