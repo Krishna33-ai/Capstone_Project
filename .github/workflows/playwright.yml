@@ -75,6 +75,7 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
+          cache-dependency-path: parabank-playwright/package-lock.json
 
       - name: Install Dependencies
         run: npm ci
