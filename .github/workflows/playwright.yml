@@ -17,6 +17,9 @@ jobs:
   test:
     timeout-minutes: 90
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: parabank-playwright
     strategy:
       fail-fast: false
       matrix:
