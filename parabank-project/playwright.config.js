@@ -16,7 +16,9 @@ module.exports = defineConfig({
 
   reporter: [
     ['list'],
-    ['allure-playwright', { resultsDir: 'allure-results' }],
+    ['allure-playwright', {
+      resultsDir: process.env.ALLURE_RESULTS_DIR || 'allure-results',
+    }],
   ],
 
   use: {

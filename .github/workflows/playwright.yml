@@ -43,6 +43,8 @@ jobs:
 
       - name: Run Playwright Tests (${{ matrix.browser }})
         working-directory: parabank-project
+        env:
+          ALLURE_RESULTS_DIR: allure-results-${{ matrix.browser }}
         run: npx playwright test --project=${{ matrix.browser }}
         continue-on-error: true
 
@@ -51,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.browser }}
-          path: parabank-project/allure-results
+          path: parabank-project/allure-results-${{ matrix.browser }}
           if-no-files-found: warn
           retention-days: 14
 
