@@ -1,30 +1,32 @@
 // pages/BillPage.js
-// Candidate: Siva
-
 const BasePage = require('./BasePage');
 
 class BillPage extends BasePage {
   constructor(page) {
     super(page);
-
-    this.payeeNameInput    = page.locator('input[name="payee.name"]');
-    this.addressInput      = page.locator('input[name="payee.address.street"]');
-    this.cityInput         = page.locator('input[name="payee.address.city"]');
-    this.stateInput        = page.locator('input[name="payee.address.state"]');
-    this.zipCodeInput      = page.locator('input[name="payee.address.zipCode"]');
-    this.phoneInput        = page.locator('input[name="payee.phoneNumber"]');
-    this.accountInput      = page.locator('input[name="payee.accountNumber"]');
+    this.payeeNameInput     = page.locator('input[name="payee.name"]');
+    this.addressInput       = page.locator('input[name="payee.address.street"]');
+    this.cityInput          = page.locator('input[name="payee.address.city"]');
+    this.stateInput         = page.locator('input[name="payee.address.state"]');
+    this.zipCodeInput       = page.locator('input[name="payee.address.zipCode"]');
+    this.phoneInput         = page.locator('input[name="payee.phoneNumber"]');
+    this.accountInput       = page.locator('input[name="payee.accountNumber"]');
     this.verifyAccountInput = page.locator('input[name="verifyAccount"]');
-    this.amountInput       = page.locator('input[name="amount"]');
-    this.fromAccountSelect = page.locator('select[name="fromAccountId"]');
-    this.sendButton        = page.locator('input[value="Send Payment"]');
-    this.rightPanel        = page.locator('#rightPanel');
-    this.billPayLink       = page.locator('a[href*="billpay"]');
+    this.amountInput        = page.locator('input[name="amount"]');
+    this.fromAccountSelect  = page.locator('select[name="fromAccountId"]');
+    this.sendButton         = page.locator('input[value="Send Payment"]');
+    this.rightPanel         = page.locator('#rightPanel');
+    this.billPayLink        = page.locator('a[href*="billpay"]');
   }
 
   async gotoBillPay() {
     await this.navigate('/parabank/billpay.htm');
     await this.page.waitForLoadState('domcontentloaded');
+    // ParaBank billpay uses AngularJS — the form is injected AFTER domcontentloaded.
+    // Firefox fires domcontentloaded before Angular bootstraps, so ALL form
+    // fields are missing when tests assert immediately.
+    // Waiting for payeeNameInput confirms Angular has fully rendered the form.
+    await this.payeeNameInput.waitFor({ state: 'visible', timeout: 35000 });
   }
 
   async getFromAccountCount() {

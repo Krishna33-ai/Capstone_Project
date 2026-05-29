@@ -1,12 +1,9 @@
 // pages/LoanPage.js
-// Candidate: Siva
-
 const BasePage = require('./BasePage');
 
 class LoanPage extends BasePage {
   constructor(page) {
     super(page);
-
     this.loanAmountInput   = page.locator('input[id="amount"]');
     this.downPaymentInput  = page.locator('input[id="downPayment"]');
     this.fromAccountSelect = page.locator('select[id="fromAccountId"]');
@@ -18,6 +15,8 @@ class LoanPage extends BasePage {
   async gotoLoan() {
     await this.navigate('/parabank/requestloan.htm');
     await this.page.waitForLoadState('domcontentloaded');
+    // Same Angular bootstrap issue as bill pay — wait for first form field
+    await this.loanAmountInput.waitFor({ state: 'visible', timeout: 35000 });
   }
 
   async getFromAccountCount() {

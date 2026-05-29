@@ -1,12 +1,9 @@
 // pages/ProfilePage.js
-// Candidate: Siva
-
 const BasePage = require('./BasePage');
 
 class ProfilePage extends BasePage {
   constructor(page) {
     super(page);
-
     this.firstNameInput = page.locator('input[id="customer.firstName"]');
     this.lastNameInput  = page.locator('input[id="customer.lastName"]');
     this.addressInput   = page.locator('input[id="customer.address.street"]');
@@ -23,6 +20,8 @@ class ProfilePage extends BasePage {
   async gotoProfile() {
     await this.navigate('/parabank/updateprofile.htm');
     await this.page.waitForLoadState('domcontentloaded');
+    // Angular renders the form fields after DOM load — wait confirms it's ready
+    await this.firstNameInput.waitFor({ state: 'visible', timeout: 35000 });
   }
 
   async getRightPanelText() {
