@@ -39,8 +39,8 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Install Playwright Browsers
-        run: npx playwright install ${{ matrix.browser }} --with-deps
+      - name: Install Playwright Browsers and System Dependencies
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run Playwright Tests (${{ matrix.browser }})
         run: npx playwright test --project=${{ matrix.browser }}
