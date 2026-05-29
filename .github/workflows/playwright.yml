@@ -27,15 +27,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Install Dependencies
         working-directory: parabank-project
@@ -58,8 +54,6 @@ jobs:
           path: parabank-project/allure-results
           if-no-files-found: warn
           retention-days: 14
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
   report:
     if: always()
@@ -70,15 +64,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Setup Java (required by allure-commandline)
         uses: actions/setup-java@v4
@@ -99,8 +89,6 @@ jobs:
           pattern: allure-results-*
           merge-multiple: true
           path: parabank-project/allure-results
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Ensure Allure Results Directory
         run: mkdir -p parabank-project/allure-results
@@ -125,8 +113,6 @@ jobs:
           path: parabank-project/allure-report
           if-no-files-found: warn
           retention-days: 14
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Deploy to GitHub Pages
         if: always() && github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master')
@@ -135,4 +121,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./parabank-project/allure-report
-        continue-on-error: true
