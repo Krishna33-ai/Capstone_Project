@@ -14,7 +14,10 @@ class ProfilePage extends BasePage {
     this.updateButton   = page.locator('input[value="Update Profile"]');
     this.rightPanel     = page.locator('#rightPanel');
     this.successMessage = page.locator('#rightPanel p');
-    this.profileLink    = page.locator('a[href*="updateprofile"]');
+    // FIX FOR TC-PROF-16:
+    // Use text-based selector — more reliable than href attribute matching
+    // when Angular resolves ng-href asynchronously after login.
+    this.profileLink    = page.locator('a:has-text("Update Contact Info")');
   }
 
   async gotoProfile() {
@@ -22,6 +25,11 @@ class ProfilePage extends BasePage {
     await this.page.waitForLoadState('domcontentloaded');
     // Angular renders the form fields after DOM load — wait confirms it's ready
     await this.firstNameInput.waitFor({ state: 'visible', timeout: 35000 });
+    // FIX FOR TC-PROF-17:
+    // State and zip inputs are also Angular-bound. Explicitly wait for both
+    // to be visible so TC-PROF-17 assertions never race against Angular binding.
+    await this.stateInput.waitFor({ state: 'visible', timeout: 35000 });
+    await this.zipCodeInput.waitFor({ state: 'visible', timeout: 35000 });
   }
 
   async getRightPanelText() {
