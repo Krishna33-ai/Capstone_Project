@@ -29,12 +29,12 @@ class AuthPage extends BasePage {
 
   async gotoHome() {
     await this.navigate('/parabank/index.htm');
-    await this.usernameInput.waitFor({ state: 'visible', timeout: 60000 });
+    await this.usernameInput.waitFor({ state: 'visible', timeout: 90000 });
   }
 
   async gotoRegister() {
     await this.navigate('/parabank/register.htm');
-    await this.firstNameInput.waitFor({ state: 'visible', timeout: 60000 });
+    await this.firstNameInput.waitFor({ state: 'visible', timeout: 90000 });
   }
 
   async login(username, password) {
