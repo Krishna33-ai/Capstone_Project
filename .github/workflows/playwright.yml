@@ -19,12 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: parabank-playwright
+        working-directory: parabank-project
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium]
-
+        browser: [chromium, firefox, webkit]
     env:
       CI: true
 
@@ -36,14 +35,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: npm
-          cache-dependency-path: parabank-playwright/package-lock.json
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Install Playwright Browsers
-        run: npx playwright install chromium --with-deps
+        run: npx playwright install ${{ matrix.browser }} --with-deps
 
       - name: Run Playwright Tests (${{ matrix.browser }})
         run: npx playwright test --project=${{ matrix.browser }}
@@ -54,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.browser }}
-          path: parabank-playwright/allure-results
+          path: parabank-project/allure-results
           if-no-files-found: warn
           retention-days: 14
 
@@ -65,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: parabank-playwright
+        working-directory: parabank-project
 
     steps:
       - name: Checkout Repository
@@ -75,32 +72,44 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: npm
-          cache-dependency-path: parabank-playwright/package-lock.json
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
+
+      - name: Setup Java (required by allure-commandline)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
       - name: Download All Allure Results
         uses: actions/download-artifact@v4
         with:
           pattern: allure-results-*
           merge-multiple: true
-          path: parabank-playwright/allure-results
+          path: parabank-project/allure-results
 
       - name: Ensure Allure Results Directory
         run: mkdir -p allure-results
 
+      - name: Debug — List allure-results contents
+        if: always()
+        run: ls -la allure-results || echo "allure-results is EMPTY or MISSING"
+
       - name: Generate Allure Report
         run: npm run allure:generate
         continue-on-error: true
+
+      - name: Debug — List allure-report contents
+        if: always()
+        run: ls -la allure-report || echo "allure-report is EMPTY or MISSING"
 
       - name: Upload Allure HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
-          path: parabank-playwright/allure-report
+          path: parabank-project/allure-report
           if-no-files-found: warn
           retention-days: 14
 
@@ -110,5 +119,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: parabank-playwright/allure-report
+          publish_dir: ./parabank-project/allure-report
         continue-on-error: true
