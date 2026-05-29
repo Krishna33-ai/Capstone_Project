@@ -3,9 +3,17 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
-  // BUG FIX: Playwright default testMatch only catches *.spec.js (dot-separated).
-  // Explicitly include *_spec.js (underscore) so all test files are discovered.
+
+  // Explicitly include both *.spec.js and *_spec.js patterns.
+  // Only ONE testMatch — duplicate key was silently dropping the first pattern.
   testMatch: ['**/*.spec.js', '**/*_spec.js'],
+
+  // ── Global setup ────────────────────────────────────────────────────────────
+  // Hits ParaBank's initializeDB endpoint once before the whole suite.
+  // This reseeds john/demo and all sample accounts so tests never fail
+  // because the shared demo server was restarted between runs.
+  globalSetup: require.resolve('./tests/global-setup'),
+
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 2,
@@ -13,10 +21,9 @@ module.exports = defineConfig({
   timeout: 90000,
 
   reporter: [
-  ['list'],
-  ['allure-playwright', { resultsDir: 'allure-results' }],  // resultsDir NOT outputFolder
-],
-testMatch: ['**/*.spec.js', '**/*_spec.js'],
+    ['list'],
+    ['allure-playwright', { resultsDir: 'allure-results' }],
+  ],
 
   use: {
     baseURL: 'https://parabank.parasoft.com',

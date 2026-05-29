@@ -27,7 +27,10 @@ class AuthPage extends BasePage {
     this.rightPanelTitle      = page.locator('#rightPanel h1.title');
   }
 
-  async gotoHome() { await this.navigate('/parabank/index.htm'); }
+  async gotoHome() {
+  await this.navigate('/parabank/index.htm');
+  await this.usernameInput.waitFor({ state: 'visible', timeout: 35000 }); // ← added
+}
 
   async gotoRegister() {
     await this.navigate('/parabank/register.htm');
