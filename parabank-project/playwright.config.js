@@ -4,7 +4,7 @@ const { defineConfig, devices } = require('@playwright/test');
 module.exports = defineConfig({
   testDir: './tests',
 
-  testMatch: ['**/*.spec.js', '**/*_spec.js'],
+  testMatch: ['**/*.spec.js'],
 
   globalSetup: require.resolve('./tests/global-setup'),
 
