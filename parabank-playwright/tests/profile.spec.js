@@ -10,7 +10,8 @@ const TEST_DATA   = require('../fixtures/testData');
 async function loginAndGoto(page) {
   const auth = new AuthPage(page);
   await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
-  await page.waitForLoadState('domcontentloaded');
+  // FIX: networkidle ensures JS session cookie is fully set before navigating
+  await page.waitForLoadState('networkidle', { timeout: 30000 });
   const profile = new ProfilePage(page);
   await profile.gotoProfile();
   await page.waitForSelector('#rightPanel', { state: 'visible', timeout: 25000 });
@@ -116,7 +117,8 @@ test.describe('Block 5 — Navigation', () => {
   test('TC-PROF-15 | Profile link is visible in left nav after login', async ({ page }) => {
     const auth = new AuthPage(page);
     await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
-    await page.waitForLoadState('domcontentloaded');
+    // FIX: networkidle ensures session is ready before checking nav link
+    await page.waitForLoadState('networkidle', { timeout: 30000 });
     const profile = new ProfilePage(page);
     await profile.profileLink.waitFor({ state: 'visible', timeout: 25000 });
     await expect(profile.profileLink).toBeVisible();
@@ -124,7 +126,8 @@ test.describe('Block 5 — Navigation', () => {
   test('TC-PROF-16 | Profile page accessible via left nav link', async ({ page }) => {
     const auth = new AuthPage(page);
     await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
-    await page.waitForLoadState('domcontentloaded');
+    // FIX: networkidle ensures session is ready before clicking nav link
+    await page.waitForLoadState('networkidle', { timeout: 30000 });
     const profile = new ProfilePage(page);
     await profile.profileLink.waitFor({ state: 'visible', timeout: 25000 });
     await profile.profileLink.click();

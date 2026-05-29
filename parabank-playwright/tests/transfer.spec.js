@@ -123,7 +123,13 @@ test.describe('Block 4 — Invalid Transfer', () => {
     await transfer.amountInput.press('Control+a');
     await page.keyboard.type('abc');
     await transfer.transferButton.click();
-    await page.waitForLoadState('domcontentloaded');
+    // FIX: ParaBank silently strips non-numeric input and stays on same page
+    // so domcontentloaded fires immediately with stale content.
+    // Promise.race detects either a real navigation OR a 2s settle window.
+    await Promise.race([
+      page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {}),
+      page.waitForTimeout(2000),
+    ]);
     await expect(async () => {
       const content = await page.locator('#rightPanel').innerText();
       expect(content.length).toBeGreaterThan(0);
@@ -135,7 +141,8 @@ test.describe('Block 5 — Navigation', () => {
   test('TC-TRF-15 | Transfer link in left nav is visible after login', async ({ page }) => {
     const auth = new AuthPage(page);
     await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
-    await page.waitForLoadState('domcontentloaded');
+    // FIX: networkidle ensures session is ready before checking nav link
+    await page.waitForLoadState('networkidle', { timeout: 30000 });
     const transfer = new TransferPage(page);
     await transfer.transferLink.waitFor({ state: 'visible', timeout: 25000 });
     await expect(transfer.transferLink).toBeVisible();
@@ -143,7 +150,8 @@ test.describe('Block 5 — Navigation', () => {
   test('TC-TRF-16 | Transfer page accessible from left nav', async ({ page }) => {
     const auth = new AuthPage(page);
     await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
-    await page.waitForLoadState('domcontentloaded');
+    // FIX: networkidle ensures session is ready before clicking nav link
+    await page.waitForLoadState('networkidle', { timeout: 30000 });
     const transfer = new TransferPage(page);
     await transfer.transferLink.waitFor({ state: 'visible', timeout: 25000 });
     await transfer.transferLink.click();
