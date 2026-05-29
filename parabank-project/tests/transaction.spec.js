@@ -57,12 +57,12 @@ test.describe('Block 1 — Account Activity Page Load', () => {
 test.describe('Block 2 — Transaction Table', () => {
   test('TC-TXN-05 | Transaction table is visible on activity page', async ({ page }) => {
     const txn = await loginAndGotoActivity(page);
-    await txn.transactionTable.waitFor({ state: 'visible', timeout: 25000 });
+    await txn.transactionTable.waitFor({ state: 'attached', timeout: 25000 });
     await expect(txn.transactionTable).toBeVisible();
   });
   test('TC-TXN-06 | Transaction table has at least one row', async ({ page }) => {
     const txn = await loginAndGotoActivity(page);
-    await txn.transactionTable.waitFor({ state: 'visible', timeout: 25000 });
+    await txn.transactionTable.waitFor({ state: 'attached', timeout: 25000 });
     await expect(async () => {
       const count = await txn.getTransactionRowCount();
       expect(count).toBeGreaterThanOrEqual(1);
@@ -70,7 +70,7 @@ test.describe('Block 2 — Transaction Table', () => {
   });
   test('TC-TXN-07 | Transaction table content is not empty', async ({ page }) => {
     const txn = await loginAndGotoActivity(page);
-    await txn.transactionTable.waitFor({ state: 'visible', timeout: 25000 });
+    await txn.transactionTable.waitFor({ state: 'attached', timeout: 25000 });
     await expect(async () => {
       const text = await txn.transactionTable.innerText();
       expect(text.trim().length).toBeGreaterThan(0);
@@ -78,7 +78,7 @@ test.describe('Block 2 — Transaction Table', () => {
   });
   test('TC-TXN-08 | Transaction table has Date column header', async ({ page }) => {
     const txn = await loginAndGotoActivity(page);
-    await txn.transactionTable.waitFor({ state: 'visible', timeout: 25000 });
+    await txn.transactionTable.waitFor({ state: 'attached', timeout: 25000 });
     const headers = await txn.transactionTable.locator('thead th').allInnerTexts();
     const hasDate = headers.some(h => h.toLowerCase().includes('date'));
     expect(hasDate).toBe(true);

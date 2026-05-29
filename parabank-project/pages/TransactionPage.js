@@ -1,12 +1,9 @@
 // pages/TransactionPage.js
-// Candidate: Siva
-
 const BasePage = require('./BasePage');
 
 class TransactionPage extends BasePage {
   constructor(page) {
     super(page);
-
     this.rightPanel        = page.locator('#rightPanel');
     this.accountTable      = page.locator('#accountTable');
     this.accountLinks      = page.locator('#accountTable a');
