@@ -27,23 +27,27 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Install Dependencies
         working-directory: parabank-project
-        run: npm install
+        run: npm ci
 
       - name: Install Playwright Browsers and System Dependencies
         working-directory: parabank-project
-        run: node node_modules/.bin/playwright install --with-deps ${{ matrix.browser }}
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run Playwright Tests (${{ matrix.browser }})
         working-directory: parabank-project
-        run: node node_modules/.bin/playwright test --project=${{ matrix.browser }}
+        run: npx playwright test --project=${{ matrix.browser }}
         continue-on-error: true
 
       - name: Upload Allure Raw Results (${{ matrix.browser }})
@@ -54,6 +58,8 @@ jobs:
           path: parabank-project/allure-results
           if-no-files-found: warn
           retention-days: 14
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
   report:
     if: always()
@@ -64,15 +70,15 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-
-      - name: Install Dependencies
-        working-directory: parabank-project
-        run: npm install
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Setup Java (required by allure-commandline)
         uses: actions/setup-java@v4
@@ -80,12 +86,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Install Dependencies
+        working-directory: parabank-project
+        run: npm ci
+
+      - name: Install Allure CLI globally
+        run: npm install -g allure-commandline
+
       - name: Download All Allure Results
         uses: actions/download-artifact@v4
         with:
           pattern: allure-results-*
           merge-multiple: true
           path: parabank-project/allure-results
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Ensure Allure Results Directory
         run: mkdir -p parabank-project/allure-results
@@ -96,7 +111,7 @@ jobs:
 
       - name: Generate Allure Report
         working-directory: parabank-project
-        run: node node_modules/.bin/allure generate allure-results --clean -o allure-report
+        run: allure generate allure-results --clean -o allure-report
 
       - name: Debug — List allure-report contents
         if: always()
@@ -110,6 +125,8 @@ jobs:
           path: parabank-project/allure-report
           if-no-files-found: warn
           retention-days: 14
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Deploy to GitHub Pages
         if: always() && github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'master')
