@@ -10,8 +10,8 @@ const TEST_DATA    = require('../fixtures/testData');
 async function loginAndGoto(page) {
   const auth = new AuthPage(page);
   await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
-  await page.waitForLoadState('domcontentloaded');
-  const transfer = new TransferPage(page);
+  await page.waitForLoadState('networkidle', { timeout: 30000 });
+    const transfer = new TransferPage(page);
   await transfer.gotoTransfer();
   await page.waitForSelector('#rightPanel', { state: 'visible', timeout: 25000 });
   await transfer.amountInput.waitFor({ state: 'visible', timeout: 25000 });
@@ -123,9 +123,6 @@ test.describe('Block 4 — Invalid Transfer', () => {
     await transfer.amountInput.press('Control+a');
     await page.keyboard.type('abc');
     await transfer.transferButton.click();
-    // FIX: ParaBank silently strips non-numeric input and stays on same page
-    // so domcontentloaded fires immediately with stale content.
-    // Promise.race detects either a real navigation OR a 2s settle window.
     await Promise.race([
       page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {}),
       page.waitForTimeout(2000),

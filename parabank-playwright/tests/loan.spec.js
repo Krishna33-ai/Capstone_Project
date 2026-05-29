@@ -10,8 +10,8 @@ const TEST_DATA = require('../fixtures/testData');
 async function loginAndGoto(page) {
   const auth = new AuthPage(page);
   await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
-  await page.waitForLoadState('domcontentloaded');
-  const loan = new LoanPage(page);
+  await page.waitForLoadState('networkidle', { timeout: 30000 });
+    const loan = new LoanPage(page);
   await loan.gotoLoan();
   await page.waitForSelector('#rightPanel', { state: 'visible', timeout: 25000 });
   await loan.loanAmountInput.waitFor({ state: 'visible', timeout: 25000 });

@@ -12,7 +12,7 @@ async function loginAndGoto(page) {
   await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
   // FIX: networkidle ensures JS session cookie is fully set before navigating
   await page.waitForLoadState('networkidle', { timeout: 30000 });
-  const profile = new ProfilePage(page);
+    const profile = new ProfilePage(page);
   await profile.gotoProfile();
   await page.waitForSelector('#rightPanel', { state: 'visible', timeout: 25000 });
   await profile.firstNameInput.waitFor({ state: 'visible', timeout: 25000 });
@@ -103,11 +103,13 @@ test.describe('Block 4 — Update Profile', () => {
       expect(content.toLowerCase()).toMatch(/profile|updated|success|error/);
     }).toPass({ timeout: 20000 });
   });
-  test('TC-PROF-14 | Updating with changed data shows response', async ({ page }) => {
-    const profile = await loginAndGoto(page);
-    await profile.updateProfile(TEST_DATA.updatedProfileData);
+  await transfer.transferButton.click();
+    await Promise.race([
+      page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {}),
+      page.waitForTimeout(2000),
+    ]);
     await expect(async () => {
-      const content = await profile.getRightPanelText();
+      const content = await page.locator('#rightPanel').innerText();
       expect(content.length).toBeGreaterThan(0);
     }).toPass({ timeout: 20000 });
   });
