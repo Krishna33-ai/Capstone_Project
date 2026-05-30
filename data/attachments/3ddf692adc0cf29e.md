@@ -1,0 +1,245 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: account.spec.js >> Block 5 — Table Content >> TC-ACCT-16 | Multiple accounts can exist in table
+- Location: tests/account.spec.js:131:3
+
+# Error details
+
+```
+TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('#accountTable') to be visible
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link:
+        - /url: admin.htm
+        - img [ref=e4] [cursor=pointer]
+      - link "ParaBank":
+        - /url: index.htm
+        - img "ParaBank" [ref=e5] [cursor=pointer]
+      - paragraph [ref=e6]: Experience the difference
+    - generic [ref=e7]:
+      - list [ref=e8]:
+        - listitem [ref=e9]: Solutions
+        - listitem [ref=e10]:
+          - link "About Us" [ref=e11] [cursor=pointer]:
+            - /url: about.htm
+        - listitem [ref=e12]:
+          - link "Services" [ref=e13] [cursor=pointer]:
+            - /url: services.htm
+        - listitem [ref=e14]:
+          - link "Products" [ref=e15] [cursor=pointer]:
+            - /url: http://www.parasoft.com/jsp/products.jsp
+        - listitem [ref=e16]:
+          - link "Locations" [ref=e17] [cursor=pointer]:
+            - /url: http://www.parasoft.com/jsp/pr/contacts.jsp
+        - listitem [ref=e18]:
+          - link "Admin Page" [ref=e19] [cursor=pointer]:
+            - /url: admin.htm
+      - list [ref=e20]:
+        - listitem [ref=e21]:
+          - link "home" [ref=e22] [cursor=pointer]:
+            - /url: index.htm
+        - listitem [ref=e23]:
+          - link "about" [ref=e24] [cursor=pointer]:
+            - /url: about.htm
+        - listitem [ref=e25]:
+          - link "contact" [ref=e26] [cursor=pointer]:
+            - /url: contact.htm
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - heading "Customer Login" [level=2] [ref=e29]
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - paragraph [ref=e32]: Username
+            - textbox [active] [ref=e34]
+            - paragraph [ref=e35]: Password
+            - textbox [ref=e37]
+            - button "Log In" [ref=e39] [cursor=pointer]
+          - paragraph [ref=e40]:
+            - link "Forgot login info?" [ref=e41] [cursor=pointer]:
+              - /url: lookup.htm
+          - paragraph [ref=e42]:
+            - link "Register" [ref=e43] [cursor=pointer]:
+              - /url: register.htm
+      - generic [ref=e44]:
+        - heading "Error!" [level=1] [ref=e45]
+        - paragraph [ref=e46]: Please enter a username and password.
+  - generic [ref=e48]:
+    - list [ref=e49]:
+      - listitem [ref=e50]:
+        - link "Home" [ref=e51] [cursor=pointer]:
+          - /url: index.htm
+        - text: "|"
+      - listitem [ref=e52]:
+        - link "About Us" [ref=e53] [cursor=pointer]:
+          - /url: about.htm
+        - text: "|"
+      - listitem [ref=e54]:
+        - link "Services" [ref=e55] [cursor=pointer]:
+          - /url: services.htm
+        - text: "|"
+      - listitem [ref=e56]:
+        - link "Products" [ref=e57] [cursor=pointer]:
+          - /url: http://www.parasoft.com/jsp/products.jsp
+        - text: "|"
+      - listitem [ref=e58]:
+        - link "Locations" [ref=e59] [cursor=pointer]:
+          - /url: http://www.parasoft.com/jsp/pr/contacts.jsp
+        - text: "|"
+      - listitem [ref=e60]:
+        - link "Forum" [ref=e61] [cursor=pointer]:
+          - /url: http://forums.parasoft.com/
+        - text: "|"
+      - listitem [ref=e62]:
+        - link "Site Map" [ref=e63] [cursor=pointer]:
+          - /url: sitemap.htm
+        - text: "|"
+      - listitem [ref=e64]:
+        - link "Contact Us" [ref=e65] [cursor=pointer]:
+          - /url: contact.htm
+    - paragraph [ref=e66]: © Parasoft. All rights reserved.
+    - list [ref=e67]:
+      - listitem [ref=e68]: "Visit us at:"
+      - listitem [ref=e69]:
+        - link "www.parasoft.com" [ref=e70] [cursor=pointer]:
+          - /url: http://www.parasoft.com/
+```
+
+# Test source
+
+```ts
+  1   | // tests/account.spec.js
+  2   | // SERVICE 2 — Account Overview | 16 Test Cases
+  3   | // Target : https://parabank.parasoft.com
+  4   | 
+  5   | const { test, expect } = require('@playwright/test');
+  6   | const AuthPage    = require('../pages/AuthPage');
+  7   | const AccountPage = require('../pages/AccountPage');
+  8   | const TEST_DATA   = require('../fixtures/testData');
+  9   | 
+  10  | async function loginAndGoto(page) {
+  11  |   const auth = new AuthPage(page);
+  12  |   await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
+  13  |   // domcontentloaded is used instead of networkidle — networkidle never resolves
+  14  |   // on Chromium because parabank keeps background XHR connections alive.
+  15  |   // Firefox and WebKit are even stricter: they can time out entirely.
+  16  |   // We rely on waitForSelector to confirm the page is truly ready.
+  17  |   await page.waitForLoadState('domcontentloaded');
+  18  |   const account = new AccountPage(page);
+> 19  |   await page.waitForSelector('#accountTable', { state: 'visible', timeout: 30000 });
+      |              ^ TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
+  20  |   return account;
+  21  | }
+  22  | 
+  23  | test.describe('Block 1 — Page Load', () => {
+  24  | 
+  25  |   test('TC-ACCT-01 | Account overview page loads after login', async ({ page }) => {
+  26  |     await loginAndGoto(page);
+  27  |     await expect(page).toHaveURL(/overview/);
+  28  |   });
+  29  | 
+  30  |   test('TC-ACCT-02 | Page title is visible', async ({ page }) => {
+  31  |     const account = await loginAndGoto(page);
+  32  |     await expect(account.pageTitle).toBeVisible();
+  33  |   });
+  34  | 
+  35  |   test('TC-ACCT-03 | Account table is visible', async ({ page }) => {
+  36  |     const account = await loginAndGoto(page);
+  37  |     await expect(account.accountTable).toBeVisible();
+  38  |   });
+  39  | 
+  40  |   test('TC-ACCT-04 | At least one account row is present', async ({ page }) => {
+  41  |     const account = await loginAndGoto(page);
+  42  |     const count = await account.getRowCount();
+  43  |     expect(count).toBeGreaterThanOrEqual(1);
+  44  |   });
+  45  | });
+  46  | 
+  47  | test.describe('Block 2 — Account Links', () => {
+  48  | 
+  49  |   test('TC-ACCT-05 | Account links are visible in table', async ({ page }) => {
+  50  |     const account = await loginAndGoto(page);
+  51  |     await expect(account.accountLinks.first()).toBeVisible();
+  52  |   });
+  53  | 
+  54  |   test('TC-ACCT-06 | Clicking first account navigates to activity page', async ({ page }) => {
+  55  |     const account = await loginAndGoto(page);
+  56  |     await account.clickFirstAccount();
+  57  |     await page.waitForLoadState('domcontentloaded');
+  58  |     await expect(page).toHaveURL(/activity/);
+  59  |   });
+  60  | 
+  61  |   test('TC-ACCT-07 | Account detail page shows account number', async ({ page }) => {
+  62  |     const account = await loginAndGoto(page);
+  63  |     await account.clickFirstAccount();
+  64  |     await page.waitForSelector('#accountDetails', { state: 'visible', timeout: 20000 });
+  65  |     await expect(account.accountNumber).toBeVisible();
+  66  |   });
+  67  | 
+  68  |   test('TC-ACCT-08 | Account detail page shows balance', async ({ page }) => {
+  69  |     const account = await loginAndGoto(page);
+  70  |     await account.clickFirstAccount();
+  71  |     await page.waitForSelector('#accountDetails', { state: 'visible', timeout: 20000 });
+  72  |     await expect(account.accountBalance).toBeVisible();
+  73  |   });
+  74  | });
+  75  | 
+  76  | test.describe('Block 3 — Account Details', () => {
+  77  | 
+  78  |   test('TC-ACCT-09 | Account type is displayed', async ({ page }) => {
+  79  |     const account = await loginAndGoto(page);
+  80  |     await account.clickFirstAccount();
+  81  |     await page.waitForSelector('#accountDetails', { state: 'visible', timeout: 20000 });
+  82  |     await expect(account.accountType).toBeVisible();
+  83  |   });
+  84  | 
+  85  |   test('TC-ACCT-10 | Available balance is displayed', async ({ page }) => {
+  86  |     const account = await loginAndGoto(page);
+  87  |     await account.clickFirstAccount();
+  88  |     await page.waitForSelector('#accountDetails', { state: 'visible', timeout: 20000 });
+  89  |     await expect(account.availableBalance).toBeVisible();
+  90  |   });
+  91  | });
+  92  | 
+  93  | test.describe('Block 4 — Navigation', () => {
+  94  | 
+  95  |   test('TC-ACCT-11 | Accounts Overview link is visible after login', async ({ page }) => {
+  96  |     const account = await loginAndGoto(page);
+  97  |     await expect(account.accountsOverviewLink).toBeVisible({ timeout: 15000 });
+  98  |   });
+  99  | 
+  100 |   test('TC-ACCT-12 | Clicking overview link stays on overview page', async ({ page }) => {
+  101 |     const account = await loginAndGoto(page);
+  102 |     await account.clickAccountsOverviewLink();
+  103 |     await page.waitForLoadState('domcontentloaded');
+  104 |     await expect(page).toHaveURL(/overview/);
+  105 |   });
+  106 | 
+  107 |   test('TC-ACCT-13 | Back to overview from account detail works', async ({ page }) => {
+  108 |     const account = await loginAndGoto(page);
+  109 |     await account.clickFirstAccount();
+  110 |     await page.waitForLoadState('domcontentloaded');
+  111 |     await account.gotoOverview();
+  112 |     await page.waitForLoadState('domcontentloaded');
+  113 |     await expect(page).toHaveURL(/overview/);
+  114 |   });
+  115 | });
+  116 | 
+  117 | test.describe('Block 5 — Table Content', () => {
+  118 | 
+  119 |   test('TC-ACCT-14 | Account table content is not empty', async ({ page }) => {
+```
