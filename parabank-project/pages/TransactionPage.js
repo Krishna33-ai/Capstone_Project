@@ -19,36 +19,25 @@ class TransactionPage extends BasePage {
     await this.page.waitForLoadState('domcontentloaded');
   }
 
-  // FIX TC-TXN-05, 07, 08, 09, 10:
-  // The account activity page (activity.htm) is AngularJS-rendered.
-  // After clicking an account link and domcontentloaded fires, Angular still
-  // needs time to bootstrap and inject #transactionTable, the month select,
-  // and the transactionType select into the DOM.
-  // Previous implementation only waited for domcontentloaded + #rightPanel,
-  // so all Angular-rendered elements were missing when tests asserted against them.
-  //
-  // Fix: after navigation, additionally wait for:
-  //   1. #transactionTable to be attached (it may not exist if account has 0 txns,
-  //      so we use a broader waitForFunction that accepts either the table or the
-  //      "No transactions" message — both signal Angular is done rendering).
-  //   2. The month select and transactionType select to be visible.
-  // This guarantees the full Angular view is ready before any test assertion.
+  // FIX TC-TXN-01/02/05/07/08/09/10:
+  // The account activity page is AngularJS-rendered. After domcontentloaded,
+  // Angular still bootstraps and injects #transactionTable, select#month,
+  // and select#transactionType into the DOM asynchronously.
+  // We wait for both filter selects to confirm Angular is fully done.
   async clickFirstAccount() {
     await this.accountLinks.first().click();
     await this.page.waitForLoadState('domcontentloaded');
-    await this.page.waitForSelector('#rightPanel', { state: 'visible', timeout: 25000 });
+    await this.page.waitForSelector('#rightPanel', { state: 'visible', timeout: 60000 });
 
-    // Wait for Angular to finish rendering the activity view.
-    // The activity page always renders either #transactionTable or a "No transactions"
-    // paragraph. Waiting for the month dropdown is the most reliable signal because
-    // it is always present regardless of transaction count.
+    // Both filter selects are always rendered on the activity page regardless
+    // of transaction count — waiting for them confirms Angular is complete.
     await this.page.waitForFunction(
       () => {
         const monthSel = document.querySelector('select#month');
         const typeSel  = document.querySelector('select#transactionType');
         return monthSel && typeSel;
       },
-      { timeout: 35000 }
+      { timeout: 60000 }
     );
   }
 

@@ -15,12 +15,7 @@ class BillPage extends BasePage {
     this.amountInput        = page.locator('input[name="amount"]');
     this.fromAccountSelect  = page.locator('select[name="fromAccountId"]');
 
-    // FIX TC-BILL-08:
-    // ParaBank renders the Send Payment button inside an AngularJS-controlled
-    // form. The button is a standard <input type="submit"> but it appears AFTER
-    // Angular finishes bootstrapping. Using a more permissive selector that
-    // matches both the value attribute AND a CSS class fallback ensures the
-    // locator resolves even when Angular mutates the DOM slightly between runs.
+    // FIX TC-BILL-08: broaden selector — primary value attr, fallback text
     this.sendButton         = page.locator('input[value="Send Payment"], button:has-text("Send Payment")');
 
     this.rightPanel         = page.locator('#rightPanel');
@@ -31,25 +26,18 @@ class BillPage extends BasePage {
     await this.navigate('/parabank/billpay.htm');
     await this.page.waitForLoadState('domcontentloaded');
 
-    // ParaBank billpay uses AngularJS — the form is injected AFTER domcontentloaded.
-    // Waiting for payeeNameInput confirms Angular has rendered the form.
-    await this.payeeNameInput.waitFor({ state: 'visible', timeout: 35000 });
+    // Wait for Angular to render the form (payeeNameInput is the first visible field)
+    await this.payeeNameInput.waitFor({ state: 'visible', timeout: 60000 });
 
-    // FIX TC-BILL-08 & TC-BILL-09:
-    // The Send Payment button and fromAccountSelect are both rendered by Angular
-    // but the fromAccountSelect OPTIONS are populated by a separate AJAX call
-    // (GET /services/bank/customers/:id/accounts). We must wait for both the
-    // select itself AND at least one option to be present before returning.
-    // Without this wait, TC-BILL-08 times out waiting for sendButton and
-    // TC-BILL-09/10 see an empty dropdown.
-    await this.sendButton.waitFor({ state: 'visible', timeout: 35000 });
-    await this.fromAccountSelect.waitFor({ state: 'visible', timeout: 35000 });
+    // FIX TC-BILL-08, 09, 10: wait for sendButton AND fromAccountSelect AJAX options
+    await this.sendButton.waitFor({ state: 'visible', timeout: 60000 });
+    await this.fromAccountSelect.waitFor({ state: 'visible', timeout: 60000 });
     await this.page.waitForFunction(
       () => {
         const sel = document.querySelector('select[name="fromAccountId"]');
         return sel && sel.options && sel.options.length > 0;
       },
-      { timeout: 35000 }
+      { timeout: 60000 }
     );
   }
 
