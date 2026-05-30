@@ -9,11 +9,15 @@ class LoanPage extends BasePage {
     this.fromAccountSelect = page.locator('select[id="fromAccountId"]');
     this.applyButton       = page.locator('input[value="Apply Now"]');
     this.rightPanel        = page.locator('#rightPanel');
-    // FIX FOR TC-LOAN-14:
-    // Use text-based selector as a fallback alongside href — the nav link text
-    // is "Request Loan" and the href contains "requestloan". Using the text
-    // selector is more reliable across Angular ng-href resolution timing.
-    this.loanLink          = page.locator('a:has-text("Request Loan")');
+
+    // FIX TC-LOAN-14 & TC-LOAN-15:
+    // ParaBank left nav renders links via AngularJS ng-href. The visible link
+    // text is "Request Loan". Using both text and href selectors with .first()
+    // ensures we match robustly even if Angular resolves ng-href slightly late.
+    // The 'or' locator (pipe syntax) matches whichever resolves first.
+    this.loanLink = page.locator(
+      'a:has-text("Request Loan"), a[href*="requestloan"]'
+    ).first();
   }
 
   async gotoLoan() {
@@ -21,6 +25,8 @@ class LoanPage extends BasePage {
     await this.page.waitForLoadState('domcontentloaded');
     // Angular bootstrap: wait for form field to confirm page is fully rendered
     await this.loanAmountInput.waitFor({ state: 'visible', timeout: 35000 });
+    // Also wait for fromAccountSelect to have options (AJAX-populated)
+    await this.fromAccountSelect.waitFor({ state: 'visible', timeout: 35000 });
   }
 
   async getFromAccountCount() {
@@ -31,23 +37,37 @@ class LoanPage extends BasePage {
     return await this.rightPanel.innerText();
   }
 
+  // FIX TC-LOAN-13:
+  // applyForLoan('0', '0') — the old waitForFunction checked that #rightPanel
+  // innerText is non-empty, but #rightPanel ALREADY has non-empty content
+  // (the loan request form itself). So the condition resolves instantly,
+  // BEFORE Angular replaces the form with the loan result (approved/denied/error).
+  //
+  // Fix: snapshot the panel text before clicking Apply Now, then wait until
+  // Angular replaces it with new content. This correctly handles all cases:
+  // valid amounts (approved/denied), zero amounts (error/denied), and large amounts.
   async applyForLoan(amount, downPayment) {
     await this.loanAmountInput.fill(amount);
     await this.downPaymentInput.fill(downPayment);
+
+    // Snapshot before state so we can detect Angular DOM update
+    const beforeText = await this.rightPanel.innerText().catch(() => '');
+
     await this.applyButton.click();
-    // FIX FOR TC-LOAN-13:
-    // After clicking Apply Now with any amount (including 0/0), ParaBank
-    // renders the result (approved/denied/error) via AngularJS asynchronously.
-    // waitForLoadState('domcontentloaded') returns before Angular updates
-    // #rightPanel. Waiting for #rightPanel to have non-empty text ensures
-    // the result is present before the test assertion runs.
     await this.page.waitForLoadState('domcontentloaded');
+
+    // Wait for Angular to replace #rightPanel content with the loan result.
+    // The result always differs from the form text (it contains "Loan Request Processed",
+    // "Approved", "Denied", or an error — none of which appear in the blank form).
     await this.page.waitForFunction(
-      () => {
+      (before) => {
         const el = document.querySelector('#rightPanel');
-        return el && el.innerText && el.innerText.trim().length > 0;
+        if (!el) return false;
+        const current = el.innerText ? el.innerText.trim() : '';
+        return current.length > 0 && current !== before.trim();
       },
-      { timeout: 35000 }
+      beforeText,
+      { timeout: 40000 }
     );
   }
 }
