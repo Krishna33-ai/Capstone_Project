@@ -11,13 +11,7 @@ module.exports = defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
 
-  // ROOT CAUSE FIX — retries:
-  // ParaBank is a public shared server that is slow and intermittently
-  // unavailable. In CI, retries: 1 meant a single flaky login (30-60 s
-  // cold start) would permanently fail a test. Raising to 2 gives every
-  // test two additional chances, which is sufficient for ParaBank's
-  // observed failure patterns without inflating total run time significantly
-  // (workers: 1 means retries are sequential, not parallel).
+  
   retries: process.env.CI ? 2 : 1,
   workers: 1,
 
@@ -38,12 +32,6 @@ module.exports = defineConfig({
     video: 'retain-on-failure',
     headless: true,
 
-    // ROOT CAUSE FIX — actionTimeout:
-    // 30 s was too low for ParaBank's shared server under CI load.
-    // usernameInput.waitFor (and other element waits) were timing out
-    // because ParaBank's servlet/JVM takes 30-60 s to serve the login
-    // panel on a cold start. 60 s covers observed worst-case latencies.
-    actionTimeout: 60000,
     navigationTimeout: 90000,
   },
 

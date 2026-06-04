@@ -1,6 +1,4 @@
-// tests/account.spec.js
-// SERVICE 2 — Account Overview | 16 Test Cases
-// Target : https://parabank.parasoft.com
+
 
 const { test, expect } = require('@playwright/test');
 const AuthPage    = require('../pages/AuthPage');
@@ -10,10 +8,7 @@ const TEST_DATA   = require('../fixtures/testData');
 async function loginAndGoto(page) {
   const auth = new AuthPage(page);
   await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
-  // domcontentloaded is used instead of networkidle — networkidle never resolves
-  // on Chromium because parabank keeps background XHR connections alive.
-  // Firefox and WebKit are even stricter: they can time out entirely.
-  // We rely on waitForSelector to confirm the page is truly ready.
+  
   await page.waitForLoadState('domcontentloaded');
   const account = new AccountPage(page);
   await page.waitForSelector('#accountTable', { state: 'visible', timeout: 30000 });

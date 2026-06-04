@@ -1,12 +1,11 @@
-// tests/bill.spec.js
-// SERVICE 5 — Bill Payment | 20 Test Cases (15 original + 5 new TC-BILL-16 to TC-BILL-20)
+
 
 const { test, expect } = require('@playwright/test');
 const AuthPage = require('../pages/AuthPage');
 const BillPage = require('../pages/BillPage');
 const TEST_DATA = require('../fixtures/testData');
 
-// BillPage.gotoBillPay() waits for Angular + AJAX account options internally
+
 async function loginAndGoto(page) {
   const auth = new AuthPage(page);
   await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
@@ -126,16 +125,10 @@ test.describe('Block 5 — Navigation', () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Block 6 — Additional Safe Test Cases (TC-BILL-16 to TC-BILL-20)
-// Pure client-side checks — no form submission, no async result rendering.
-// Each test verifies DOM attributes or input behaviour only, making them
-// reliable across all 3 browsers regardless of server speed.
-// ─────────────────────────────────────────────────────────────────────────────
+
 test.describe('Block 6 — Input Validation & UI State', () => {
 
-  // TC-BILL-16: Verifies the payee name input accepts and retains a text value.
-  // Safe: fill() + inputValue() is a pure in-browser check — no server call.
+  
   test('TC-BILL-16 | Payee name input accepts and retains text value', async ({ page }) => {
     const bill = await loginAndGoto(page);
     await bill.payeeNameInput.fill(TEST_DATA.payeeData.name);
@@ -143,8 +136,7 @@ test.describe('Block 6 — Input Validation & UI State', () => {
     expect(value).toBe(TEST_DATA.payeeData.name);
   });
 
-  // TC-BILL-17: Verifies the amount input accepts and retains a numeric string.
-  // Safe: fill() + inputValue() only — no form submission.
+  
   test('TC-BILL-17 | Amount input accepts numeric value', async ({ page }) => {
     const bill = await loginAndGoto(page);
     await bill.amountInput.fill(TEST_DATA.payeeData.amount);
@@ -152,9 +144,7 @@ test.describe('Block 6 — Input Validation & UI State', () => {
     expect(value).toBe(TEST_DATA.payeeData.amount);
   });
 
-  // TC-BILL-18: Verifies the fromAccountSelect is a proper <select> element
-  // with the correct name attribute the server expects.
-  // Safe: reads a DOM attribute — no side effects.
+  
   test('TC-BILL-18 | From account dropdown has correct name attribute', async ({ page }) => {
     const bill = await loginAndGoto(page);
     await waitForFromAccount(bill);
@@ -162,8 +152,7 @@ test.describe('Block 6 — Input Validation & UI State', () => {
     expect(name).toBe('fromAccountId');
   });
 
-  // TC-BILL-19: Verifies the account number input can be cleared and re-filled.
-  // Safe: two sequential fill() calls — no form submission.
+  
   test('TC-BILL-19 | Account number input can be cleared and re-entered', async ({ page }) => {
     const bill = await loginAndGoto(page);
     await bill.accountInput.fill(TEST_DATA.payeeData.account);
@@ -173,13 +162,12 @@ test.describe('Block 6 — Input Validation & UI State', () => {
     expect(value).toBe('99999');
   });
 
-  // TC-BILL-20: Verifies the Send Payment button has the correct input type.
-  // Safe: reads a DOM attribute — no navigation or server interaction.
+  
   test('TC-BILL-20 | Send Payment button has correct input type', async ({ page }) => {
     const bill = await loginAndGoto(page);
     await bill.sendButton.waitFor({ state: 'visible', timeout: 60000 });
     const type = await bill.sendButton.getAttribute('type');
-    // ParaBank renders the button as <input type="submit" value="Send Payment">
+    
     expect(type).toBe('submit');
   });
 });

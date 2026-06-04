@@ -1,6 +1,4 @@
-// tests/auth.spec.js
-// SERVICE 1 — Authentication | Test Cases
-// Target : https://parabank.parasoft.com
+
 
 const { test, expect } = require('@playwright/test');
 const AuthPage  = require('../pages/AuthPage');
@@ -69,9 +67,7 @@ test.describe('Block 3 — Invalid Login', () => {
     const auth = new AuthPage(page);
     const { username, password } = TEST_DATA.invalidCredentials.wrongPassword;
     await auth.login(username, password);
-    // Parabank renders the error as a hidden <p class="error"> inside #rightPanel.
-    // It is present in the DOM but display:none — so we wait for it to be
-    // attached (not visible) and then confirm it has non-empty text content.
+    
     await auth.loginError.waitFor({ state: 'attached', timeout: 20000 });
     const text = await auth.loginError.innerText();
     expect(text.trim().length).toBeGreaterThan(0);

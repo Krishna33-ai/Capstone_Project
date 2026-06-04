@@ -14,7 +14,7 @@ class ProfilePage extends BasePage {
     this.updateButton   = page.locator('input[value="Update Profile"]');
     this.rightPanel     = page.locator('#rightPanel');
     this.successMessage = page.locator('#rightPanel p');
-    // text-based selector — reliable across Angular ng-href timing
+    
     this.profileLink    = page.locator('a:has-text("Update Contact Info")');
   }
 
@@ -22,10 +22,7 @@ class ProfilePage extends BasePage {
     await this.navigate('/parabank/updateprofile.htm');
     await this.page.waitForLoadState('domcontentloaded');
 
-    // FIX TC-PROF-01 & TC-PROF-02:
-    // Wait for #rightPanel first (confirms page structure rendered), then
-    // wait for each Angular-bound form field. Without #rightPanel wait,
-    // TC-PROF-02 (rightPanel.toBeVisible) could race with Angular init.
+    
     await this.page.waitForSelector('#rightPanel', { state: 'visible', timeout: 60000 });
     await this.firstNameInput.waitFor({ state: 'visible', timeout: 60000 });
     await this.stateInput.waitFor({ state: 'visible', timeout: 60000 });

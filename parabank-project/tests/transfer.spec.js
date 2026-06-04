@@ -1,6 +1,4 @@
-// tests/transfer.spec.js
-// SERVICE 3 — Fund Transfer | 16 Test Cases
-// Target : https://parabank.parasoft.com
+
 
 const { test, expect } = require('@playwright/test');
 const AuthPage     = require('../pages/AuthPage');
@@ -37,8 +35,7 @@ async function clickAndWait(page, transfer) {
     beforeText,
     { timeout: 60000 }
   ).catch(() => {
-    // If panel didn't change (e.g. server accepted as-is), that is still a
-    // valid result — the test's own assertion will verify content.
+    
   });
 }
 
@@ -116,11 +113,7 @@ test.describe('Block 3 — Valid Transfer', () => {
 });
 
 test.describe('Block 4 — Invalid Transfer', () => {
-  // FIX TC-TRF-12/13/14:
-  // For zero/empty/invalid amount, Angular shows an inline validation error
-  // without navigating. The old toPass on content.length resolved instantly
-  // with the unchanged form content. clickAndWait() uses beforeText snapshot
-  // to wait for Angular to actually mutate #rightPanel.
+  
   test('TC-TRF-12 | Zero amount shows error or stays on page', async ({ page }) => {
     const transfer = await loginAndGoto(page);
     await transfer.amountInput.fill(TEST_DATA.transferData.zeroAmount);

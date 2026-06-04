@@ -70,8 +70,6 @@ const TEST_DATA = {
     phone:     '555-987-6543',
   },
 
-  // ── Internal API endpoints ───────────────────────────────────────────────────
-  // ParaBank REST API — returns JSON when Accept: application/json is set.
   endpoints: {
     login:        (u, p)  => `${BASE}/login/${u}/${p}`,
     accounts:     (cid)   => `${BASE}/customers/${cid}/accounts`,

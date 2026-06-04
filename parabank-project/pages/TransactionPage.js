@@ -19,18 +19,13 @@ class TransactionPage extends BasePage {
     await this.page.waitForLoadState('domcontentloaded');
   }
 
-  // FIX TC-TXN-01/02/05/07/08/09/10:
-  // The account activity page is AngularJS-rendered. After domcontentloaded,
-  // Angular still bootstraps and injects #transactionTable, select#month,
-  // and select#transactionType into the DOM asynchronously.
-  // We wait for both filter selects to confirm Angular is fully done.
+  
   async clickFirstAccount() {
     await this.accountLinks.first().click();
     await this.page.waitForLoadState('domcontentloaded');
     await this.page.waitForSelector('#rightPanel', { state: 'visible', timeout: 60000 });
 
-    // Both filter selects are always rendered on the activity page regardless
-    // of transaction count — waiting for them confirms Angular is complete.
+    
     await this.page.waitForFunction(
       () => {
         const monthSel = document.querySelector('select#month');

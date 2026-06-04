@@ -15,7 +15,7 @@ class BillPage extends BasePage {
     this.amountInput        = page.locator('input[name="amount"]');
     this.fromAccountSelect  = page.locator('select[name="fromAccountId"]');
 
-    // FIX TC-BILL-08: broaden selector — primary value attr, fallback text
+    
     this.sendButton         = page.locator('input[value="Send Payment"], button:has-text("Send Payment")');
 
     this.rightPanel         = page.locator('#rightPanel');
@@ -26,10 +26,10 @@ class BillPage extends BasePage {
     await this.navigate('/parabank/billpay.htm');
     await this.page.waitForLoadState('domcontentloaded');
 
-    // Wait for Angular to render the form (payeeNameInput is the first visible field)
+    
     await this.payeeNameInput.waitFor({ state: 'visible', timeout: 60000 });
 
-    // FIX TC-BILL-08, 09, 10: wait for sendButton AND fromAccountSelect AJAX options
+  
     await this.sendButton.waitFor({ state: 'visible', timeout: 60000 });
     await this.fromAccountSelect.waitFor({ state: 'visible', timeout: 60000 });
     await this.page.waitForFunction(
