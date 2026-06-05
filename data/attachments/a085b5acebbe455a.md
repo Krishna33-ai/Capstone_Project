@@ -1,0 +1,240 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: transaction.spec.js >> Block 1 — Account Activity Page Load >> TC-TXN-04 | Account overview link is visible on activity page
+- Location: tests/transaction.spec.js:43:3
+
+# Error details
+
+```
+TimeoutError: locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('#accountTable a').first() to be visible
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link:
+        - /url: admin.htm
+        - img [ref=e4]
+      - link "ParaBank":
+        - /url: index.htm
+        - img "ParaBank" [ref=e5]
+      - paragraph [ref=e6]: Experience the difference
+    - generic [ref=e7]:
+      - list [ref=e8]:
+        - listitem [ref=e9]: Solutions
+        - listitem [ref=e10]:
+          - link "About Us" [ref=e11]:
+            - /url: about.htm
+        - listitem [ref=e12]:
+          - link "Services" [ref=e13]:
+            - /url: services.htm
+        - listitem [ref=e14]:
+          - link "Products" [ref=e15]:
+            - /url: http://www.parasoft.com/jsp/products.jsp
+        - listitem [ref=e16]:
+          - link "Locations" [ref=e17]:
+            - /url: http://www.parasoft.com/jsp/pr/contacts.jsp
+        - listitem [ref=e18]:
+          - link "Admin Page" [ref=e19]:
+            - /url: admin.htm
+      - list [ref=e20]:
+        - listitem [ref=e21]:
+          - link "home" [ref=e22]:
+            - /url: index.htm
+        - listitem [ref=e23]:
+          - link "about" [ref=e24]:
+            - /url: about.htm
+        - listitem [ref=e25]:
+          - link "contact" [ref=e26]:
+            - /url: contact.htm
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - heading "Customer Login" [level=2] [ref=e29]
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - paragraph [ref=e32]: Username
+            - textbox [active] [ref=e34]
+            - paragraph [ref=e35]: Password
+            - textbox [ref=e37]
+            - button "Log In" [ref=e39] [cursor=pointer]
+          - paragraph [ref=e40]:
+            - link "Forgot login info?" [ref=e41]:
+              - /url: lookup.htm
+          - paragraph [ref=e42]:
+            - link "Register" [ref=e43]:
+              - /url: register.htm
+      - generic [ref=e44]:
+        - heading "Error!" [level=1] [ref=e45]
+        - paragraph [ref=e46]: An internal error has occurred and has been logged.
+  - generic [ref=e48]:
+    - list [ref=e49]:
+      - listitem [ref=e50]:
+        - link "Home" [ref=e51]:
+          - /url: index.htm
+        - text: "|"
+      - listitem [ref=e52]:
+        - link "About Us" [ref=e53]:
+          - /url: about.htm
+        - text: "|"
+      - listitem [ref=e54]:
+        - link "Services" [ref=e55]:
+          - /url: services.htm
+        - text: "|"
+      - listitem [ref=e56]:
+        - link "Products" [ref=e57]:
+          - /url: http://www.parasoft.com/jsp/products.jsp
+        - text: "|"
+      - listitem [ref=e58]:
+        - link "Locations" [ref=e59]:
+          - /url: http://www.parasoft.com/jsp/pr/contacts.jsp
+        - text: "|"
+      - listitem [ref=e60]:
+        - link "Forum" [ref=e61]:
+          - /url: http://forums.parasoft.com/
+        - text: "|"
+      - listitem [ref=e62]:
+        - link "Site Map" [ref=e63]:
+          - /url: sitemap.htm
+        - text: "|"
+      - listitem [ref=e64]:
+        - link "Contact Us" [ref=e65]:
+          - /url: contact.htm
+    - paragraph [ref=e66]: © Parasoft. All rights reserved.
+    - list [ref=e67]:
+      - listitem [ref=e68]: "Visit us at:"
+      - listitem [ref=e69]:
+        - link "www.parasoft.com" [ref=e70]:
+          - /url: http://www.parasoft.com/
+```
+
+# Test source
+
+```ts
+  1   | 
+  2   | 
+  3   | const { test, expect } = require('@playwright/test');
+  4   | const AuthPage        = require('../pages/AuthPage');
+  5   | const TransactionPage = require('../pages/TransactionPage');
+  6   | const TEST_DATA       = require('../fixtures/testData');
+  7   | 
+  8   | async function loginAndGotoActivity(page) {
+  9   |   const auth = new AuthPage(page);
+  10  |   await auth.login(TEST_DATA.validUser.username, TEST_DATA.validUser.password);
+  11  |   await page.waitForLoadState('domcontentloaded');
+  12  |   const txn = new TransactionPage(page);
+  13  |   await txn.gotoOverview();
+> 14  |   await txn.accountLinks.first().waitFor({ state: 'visible', timeout: 30000 });
+      |                                  ^ TimeoutError: locator.waitFor: Timeout 30000ms exceeded.
+  15  |   await txn.clickFirstAccount();
+  16  |   await page.waitForLoadState('domcontentloaded');
+  17  |   await page.waitForSelector('#rightPanel', { state: 'visible', timeout: 25000 });
+  18  |   return txn;
+  19  | }
+  20  | 
+  21  | test.describe('Block 1 — Account Activity Page Load', () => {
+  22  |   test('TC-TXN-01 | Account activity page loads after clicking account', async ({ page }) => {
+  23  |     await loginAndGotoActivity(page);
+  24  |     await expect(page).toHaveURL(/activity/);
+  25  |   });
+  26  | 
+  27  |   
+  28  |   test('TC-TXN-02 | Right panel content is visible on activity page', async ({ page }) => {
+  29  |     const txn = await loginAndGotoActivity(page);
+  30  |     await expect(async () => {
+  31  |       await expect(txn.rightPanel).toBeVisible();
+  32  |     }).toPass({ timeout: 20000 });
+  33  |   });
+  34  | 
+  35  |   test('TC-TXN-03 | Page title contains account related text', async ({ page }) => {
+  36  |     const txn = await loginAndGotoActivity(page);
+  37  |     await expect(async () => {
+  38  |       const text = await txn.getRightPanelText();
+  39  |       expect(text.length).toBeGreaterThan(0);
+  40  |     }).toPass({ timeout: 15000 });
+  41  |   });
+  42  | 
+  43  |   test('TC-TXN-04 | Account overview link is visible on activity page', async ({ page }) => {
+  44  |     const txn = await loginAndGotoActivity(page);
+  45  |     await txn.overviewLink.waitFor({ state: 'visible', timeout: 20000 });
+  46  |     await expect(txn.overviewLink).toBeVisible();
+  47  |   });
+  48  | });
+  49  | 
+  50  | test.describe('Block 2 — Transaction Table', () => {
+  51  |   test('TC-TXN-05 | Transaction table is visible on activity page', async ({ page }) => {
+  52  |     const txn = await loginAndGotoActivity(page);
+  53  |     await txn.transactionTable.waitFor({ state: 'attached', timeout: 25000 });
+  54  |     await expect(txn.transactionTable).toBeVisible();
+  55  |   });
+  56  |   test('TC-TXN-06 | Transaction table has at least one row', async ({ page }) => {
+  57  |     const txn = await loginAndGotoActivity(page);
+  58  |     await txn.transactionTable.waitFor({ state: 'attached', timeout: 25000 });
+  59  |     await expect(async () => {
+  60  |       const count = await txn.getTransactionRowCount();
+  61  |       expect(count).toBeGreaterThanOrEqual(1);
+  62  |     }).toPass({ timeout: 20000 });
+  63  |   });
+  64  |   test('TC-TXN-07 | Transaction table content is not empty', async ({ page }) => {
+  65  |     const txn = await loginAndGotoActivity(page);
+  66  |     await txn.transactionTable.waitFor({ state: 'attached', timeout: 25000 });
+  67  |     await expect(async () => {
+  68  |       const text = await txn.transactionTable.innerText();
+  69  |       expect(text.trim().length).toBeGreaterThan(0);
+  70  |     }).toPass({ timeout: 15000 });
+  71  |   });
+  72  |   test('TC-TXN-08 | Transaction table has Date column header', async ({ page }) => {
+  73  |     const txn = await loginAndGotoActivity(page);
+  74  |     await txn.transactionTable.waitFor({ state: 'attached', timeout: 25000 });
+  75  |     const headers = await txn.transactionTable.locator('thead th').allInnerTexts();
+  76  |     const hasDate = headers.some(h => h.toLowerCase().includes('date'));
+  77  |     expect(hasDate).toBe(true);
+  78  |   });
+  79  | });
+  80  | 
+  81  | test.describe('Block 3 — Filter Controls', () => {
+  82  |   test('TC-TXN-09 | Activity month dropdown is visible', async ({ page }) => {
+  83  |     const txn = await loginAndGotoActivity(page);
+  84  |     await txn.activitySelect.waitFor({ state: 'visible', timeout: 25000 });
+  85  |     await expect(txn.activitySelect).toBeVisible();
+  86  |   });
+  87  |   test('TC-TXN-10 | Transaction type dropdown is visible', async ({ page }) => {
+  88  |     const txn = await loginAndGotoActivity(page);
+  89  |     await txn.typeSelect.waitFor({ state: 'visible', timeout: 25000 });
+  90  |     await expect(txn.typeSelect).toBeVisible();
+  91  |   });
+  92  |   test('TC-TXN-11 | Go button for filter is visible', async ({ page }) => {
+  93  |     const txn = await loginAndGotoActivity(page);
+  94  |     await txn.findButton.waitFor({ state: 'visible', timeout: 25000 });
+  95  |     await expect(txn.findButton).toBeVisible();
+  96  |   });
+  97  |   test('TC-TXN-12 | Clicking Go button keeps page on activity URL', async ({ page }) => {
+  98  |     const txn = await loginAndGotoActivity(page);
+  99  |     await txn.findButton.waitFor({ state: 'visible', timeout: 25000 });
+  100 |     await txn.findButton.click();
+  101 |     await page.waitForLoadState('domcontentloaded');
+  102 |     await expect(async () => {
+  103 |       const content = await txn.getRightPanelText();
+  104 |       expect(content.length).toBeGreaterThan(0);
+  105 |     }).toPass({ timeout: 15000 });
+  106 |   });
+  107 | });
+  108 | 
+  109 | test.describe('Block 4 — Amount Filter', () => {
+  110 |   test('TC-TXN-13 | Amount search input is visible', async ({ page }) => {
+  111 |     const txn = await loginAndGotoActivity(page);
+  112 |     await expect(async () => {
+  113 |       const content = await txn.getRightPanelText();
+  114 |       expect(content.toLowerCase()).toMatch(/amount|transaction|balance/);
+```
